@@ -1,0 +1,5 @@
+sample	cell_line	rep
+MDA_sgCTRL.r1	MDA_sgCTRL	1
+MDA_sgCTRL.r2	MDA_sgCTRL	2
+MDA_sgHNRNPC.r1	MDA_sgHNRNPC	1
+MDA_sgHNRNPC.r2	MDA_sgHNRNPC	2

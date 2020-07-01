@@ -1,0 +1,21 @@
+Package: APAlog
+Title: Analysis of alternative poly A site usage 
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Hossein",
+           family = "Asgharian",
+           role = c("aut", "cre"),
+           email = "hosseinali.asgharian@ucsf.edu",
+           comment = c(ORCID = "https://orcid.org/0000-0001-7085-5045"))
+Description: Many trancripts in human and other organisms have multiple potential poly A sites. 
+  Selection of different poly A sites affects the composition of 3' UTR and the the regulatory elements it contains,
+  and may impact several aspects of mRNA life cycle e.g. stability and translation rate. The APAlog package tests 
+  the significance of differential poly A site usage for each transcript across samples. The source of input data
+  can be a 3' sequencing protocol e.g. Tag-Seq or QuantSeq, or regular RNA-seq with an annotation file.
+  Three modes of analysis are offered: Overall transcript-wise test to evaluate the existence of differential pA usage,
+  pairwise comparison of all pA sites of a transcript, or setting one pA site as the canonical or reference site 
+  and comparing every other pA site to this reference.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
