@@ -1,4 +1,4 @@
-![Logo-r](https://github.com/Goodarzilab/APAlog/tree/master/data/APALog logo3.png)
+![Logo-r](https://github.com/Goodarzilab/APAlog/tree/master/data/APALog_logo3.png)
 
 # APAlog: A tool for quantification of alternative poly A site usage
 
@@ -170,7 +170,7 @@ log APA (site.04/site.01) MDA-sgHNRNPC vs. MDA-sgCTRL = 0.264
 
 APA (site.04/site.01) MDA-sgHNRNPC vs. MDA-sgCTRL = exp(0.264)= 1.302
 
-But this difference is not significant (FDR=0.89). Note that in the case of categorical variables, the name of the non-reference level(s) is appended to variable name in the __APAlog output__. In the example above, the predictor variable is "cell line", the reference level is "MDA-sgCTRL" and the non-reference level is "MDA-sgHNRNPC".
+But this difference is not significant (FDR=0.89). Note that in the case of categorical variables, the name of the non-reference level(s) is appended to variable name in the __APAlog__ output. In the example above, the predictor variable is "cell line", the reference level is "MDA-sgCTRL" and the non-reference level is "MDA-sgHNRNPC".
 
 Note: The multinomial and pairwise tests use different fitting algorithms. That is why the log APA and p-values of similar comparisons in the two outputs are numerically very close but not identical.
 
