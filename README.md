@@ -1,4 +1,4 @@
-![Logo-r](https://github.com/Goodarzilab/APAlog/tree/master/data/APALog_logo3.png)
+![Logo-r](https://github.com/goodarzilab/APAlog/blob/master/data/APALog%20_logo3.png)
 
 # APAlog: A tool for quantification of alternative poly A site usage
 
