@@ -1,29 +1,31 @@
-![Logo-r](https://github.com/Goodarzilab/APAlog/blob/master/data/APALog logo2.png)
+![Logo-r](https://github.com/Goodarzilab/APAlog/tree/master/data/APALog logo3.png)
 
 # APAlog: A tool for quantification of alternative poly A site usage
 
 
-Many trancripts in human and other organisms have multiple potential poly A sites. Using different poly A sites affects the composition of 3' UTR and the the regulatory elements it contains, and may impact important aspects of mRNA life cycle including stability and translation rate. The APAlog package tests the significance of differential poly A site usage for each transcript across samples. The source of input data can be a 3' sequencing protocol e.g. Tag-Seq or QuantSeq, or regular RNA-seq reads mapped to annotated poly A sites. APAlog offers three tests to evaluate the differential use of poly A sites of each transcript among samples:
+Many trancripts in human and other organisms have multiple potential poly A sites. Using different poly A sites affects the composition of 3' UTR and the the regulatory elements it contains, and may impact important aspects of mRNA life cycle including stability and translation rate. The __APAlog__ package tests the significance of differential poly A site usage for each transcript across samples. The source of input data can be a 3' sequencing protocol e.g. Tag-Seq or QuantSeq, or regular RNA-seq reads mapped to annotated poly A sites. __APAlog__ offers three tests to evaluate the differential use of poly A sites of each transcript among samples:
 
 - Overall transcript-wise test
 - Multinomial test 
 - Pairwise test
 
-The overall test evaluates the null hypothesis of no difference in poly A site usage of a transcript among samples. The multinomial test sets one of the poly A sites to canonical (reference) and compares the usage of all other poly A sites (one or more alternative sites) to this reference. The pairwise test compares the usage of all pairs of poly A sites of a transcript.
+The overall test evaluates the null hypothesis of no difference in poly A site usage of a transcript among samples. The multinomial test sets one of the poly A sites to canonical (reference) and compares the usage of all other poly A sites (one or more alternative sites) to this reference. The pairwise test compares the usage of all pairs of poly A sites of a transcript.  
 
-### Installing APAlog
+## Installing APAlog
 
 To install __APAlog__ directly from GitHub, you need the *devtools* package. If not already installed on your system, run
     
 `install.packages("devtools")`
 	
-Then, load _devtools_ and install __APAlog__ by
+Then, load _devtools_, install and load __APAlog__ by
 	
-`library(devtools); install_github("Goodarzilab/APAlog", dependencies = TRUE)`
+`library(devtools)`  
+`install_github("Goodarzilab/APAlog", dependencies = TRUE)`  
+`library(APAlog)`  
 
-### Input data
+## Input data
 
-The input to all three tests are two tables: a count table and a design table. Each row of the count table contains normalized RNA read counts pertaining to a poly A site of a transcript in one sample.  The design table describes each sample with covariates that can be used as predictors by APAlog. Predictors in the APAlog model can be sample labels or one or more sample attributes (categorical or continuous variables) provided by the design matrix. 
+The input to all three tests are two tables: a count table and a design table. Each row of the count table contains normalized RNA read counts pertaining to a poly A site of a transcript in one sample.  The design table describes each sample with covariates that can be used as predictors by __APAlog__. Predictors in the __APAlog__ model can be sample labels or one or more sample attributes (categorical or continuous variables) provided by the design matrix. 
 
 Examples of a count table (only first six rows printed here):
 
@@ -44,8 +46,8 @@ This is a toy dataset with only eight transcripts and four samples (two cell lin
 | MDA_sgCTRL.r2 | MDA_sgCTRL | 2 |
 | MDA_sgHNRNPC.r1 | MDA_sgHNRNPC | 1 |
 | MDA_sgHNRNPC.r2 | MDA_sgHNRNPC | 2 |
-
-### Overall transcript-wise test
+  
+## Overall transcript-wise test
 
 The aim of this test is to indentify genes or transcripts which show differential poly A site selection among samples without specifying which pA sites are used more or less, or which covariates contribute to the difference. This is achieved through a deviance test which compares goodness-of-fit of the fitted model to the null model to answer the following question: Does the fitted model explain the data significantly better than the null model? (Null: equal usage of poly A sites across all samples.) Check the `pA_logit_dev` function documentation for description of arguments and options. 
 
@@ -77,10 +79,9 @@ Correct the p-values for multiple testing:
 | Hs.523054.1 | 0.3581712 | 0.7983591 |
 | Hs.525527.1 | 0.0582738 | 0.3683594 |
 
-Check the `adj_p` function documentation for description of arguments and options.
+Check the `adj_p` function documentation for description of arguments and options.  
 
-
-### Pairwise test
+## Pairwise test
 
 This test compares all pairs of pA sites of a gene or transcripts and identifies those pairs whose usage ratios varies by the predictors in the model. Check the `pA_logit_pairwise` function documentation for description of arguments and options. 
 
@@ -103,7 +104,7 @@ This test compares all pairs of pA sites of a gene or transcripts and identifies
 | Hs.525527.1 | site.09 | site.16 | 3.7438244 | 0.0000001 | -1.4088383 | 0.0830058 |
 
 
-Due to the mutual non-independence of p-values from testing pairs of poly A sites in transcripts with more than two sites, a major assumption of multiple testing correction procedures i.e. independence of all p-values is violated. Therefore, adjusting the p-value columns of fit.p_HNRNPC directly may be problematic. To circumvent this problem, we can merge fit.o_HNRNPC and fit.p_HNRNPC. There is only one deviance test per transcript, and the p-values from different transcripts are independent. Adjusted p-values from the deviance test can be used (with a cutoff) to determine which transcripts exhibit differential poly A site usage across the modeled conditions. For those transcripts which pass this threshold, one can select the most important shift(s) in poly A site usage based on the effect size ("b_" or $\beta$, regression coefficient), significance (uncorrected "p_") or a combination of them from the output of the pairwise test.
+Due to the mutual non-independence of p-values from testing pairs of poly A sites in transcripts with more than two sites, a major assumption of multiple testing correction procedures i.e. independence of all p-values is violated. Therefore, adjusting the p-value columns of fit.p_HNRNPC directly may be problematic. To circumvent this problem, we can merge fit.o_HNRNPC and fit.p_HNRNPC. There is only one deviance test per transcript, and the p-values from different transcripts are independent. Adjusted p-values from the deviance test can be used (with a cutoff) to determine which transcripts exhibit differential poly A site usage across the modeled conditions. For those transcripts which pass this threshold, one can select the most important shift(s) in poly A site usage based on the effect size ("b_", regression coefficient), significance (uncorrected "p_") or a combination of them from the output of the pairwise test.
 
 `fit.op_HNRNPC <- merge(fit.o_HNRNPC_fdr, fit.p_HNRNPC, by = "transcript")`
 
@@ -122,9 +123,8 @@ Due to the mutual non-independence of p-values from testing pairs of poly A site
 | Hs.515688.1 | 0.7858670 | 0.7983591 | site.01 | site.05 | -0.1915948 | 0.4830983 | -0.0999251 | 0.7858553 |
 | Hs.523054.1 | 0.3581712 | 0.7983591 | site.11 | site.17 | 1.0864190 | 0.0548246 | 1.0186876 | 0.3888369 |
 | Hs.525527.1 | 0.0582738 | 0.3683594 | site.09 | site.16 | 3.7438244 | 0.0000001 | -1.4088383 | 0.0830058 |
-
-
-### Multinomial test
+  
+## Multinomial test
 
 This test is the preferred choice when one of the pA sites of each transcript e.g. the most proximal site is meant to serve as a baseline or default site vs. the alternative sites that may be activated under certain physiological conditions, as a result of 3' UTR mutations etc. Check the `pA_logit_dev` function documentation for description of arguments and options. 
 
@@ -162,25 +162,25 @@ Next, adjust the p values for multiple testing:
 | Hs.523054.1 | site.11 | site.17 | 1.0864160 | 1.0186867 | 0.0548251 | 0.3888367 | 0.0783216 | 0.8879276 |
 | Hs.525527.1 | site.09 | site.16 | 3.7438351 | -1.4088503 | 0.0000001 | 0.0830059 | 0.0000006 | 0.4805503 |
 
-### Interpretation of output
+## Output interpretation
 
-Regression coefficients ($\beta$s or $b\_$s in the output column names) are equal to log of the alternative/reference poly A site (APA) ratio per covariate. Corresponding adjusted p-values mark the significance of differential poly A usage. For example, for transcript Hs.29665.1:
+Regression coefficients (b's in the output column names) are equal to log of the alternative/reference poly A site (APA) ratio per covariate. Corresponding adjusted p-values mark the significance of differential poly A usage. For example, for transcript Hs.29665.1:
 
-$log\ APA_{(site.04/site.01)\ MDA-sgHNRNPC\ vs.\ MDA-sgCTRL} = 0.264$
+log APA (site.04/site.01) MDA-sgHNRNPC vs. MDA-sgCTRL = 0.264
 
-$APA_{(site.04/site.01)\ MDA-sgHNRNPC\ vs.\ MDA-sgCTRL} = exp(0.264)= 1.302$
+APA (site.04/site.01) MDA-sgHNRNPC vs. MDA-sgCTRL = exp(0.264)= 1.302
 
-But this difference is not significant ($FDR=0.89$). Note that in the case of categorical variables, the name of the non-reference level(s) is appended to variable name in the APAlog output. In the example above, the predictor variable is "cell line", the reference level is "MDA-sgCTRL" and the non-reference level is "MDA-sgHNRNPC".
+But this difference is not significant (FDR=0.89). Note that in the case of categorical variables, the name of the non-reference level(s) is appended to variable name in the __APAlog output__. In the example above, the predictor variable is "cell line", the reference level is "MDA-sgCTRL" and the non-reference level is "MDA-sgHNRNPC".
 
-Note: The multinomial and pairwise tests use different fitting algorithms. That is why the $log APA$ and $p-values$ of similar comparisons in the two outputs are numerically very close but not identical.
+Note: The multinomial and pairwise tests use different fitting algorithms. That is why the log APA and p-values of similar comparisons in the two outputs are numerically very close but not identical.
 
-Note: Regression intercept in the APAlog output represents the alternative/reference pA site ratio in the reference sample (the sample that has the reference values for all predictors), in this case MDA-sgCTRL. Note that such a sample may not actually exist in some datasets, for example in a multivariate dataset with several categorical predictors and partial factorial design, or a dataset containing continuous variables whose ranges exclude 0. Although the reference or baseline value for continuous covariates like age is automatically set at 0, real samples almost always have non-zero values. Therefore, whether or not the intercept term has a biological meaning depends on the dataset and  sample and variable types. 
+Note: Regression intercept in the __APAlog__ output represents the alternative/reference pA site ratio in the reference sample (the sample that has the reference values for all predictors), in this case MDA-sgCTRL. Note that such a sample may not actually exist in some datasets, for example in a multivariate dataset with several categorical predictors and partial factorial design, or a dataset containing continuous variables whose ranges exclude 0. Although the reference or baseline value for continuous covariates like age is automatically set at 0, real samples almost always have non-zero values. Therefore, whether or not the intercept term has a biological meaning depends on the dataset and  sample and variable types. 
 
-Note: APAlog automatically removes transcripts that are not represented by two or more active pA sites (>=2 pA sites with non-zero counts) from the analysis because there is no comparison to make in those  cases. However, if the count of a pA site is zero in the reference sample, it can cause errors of division by zero. A simple fix that is commonly used in bioinformatics is adding a small value e.g. 0.5 to all counts before running the test to avoid this error. 
+Note: __APAlog__ automatically removes transcripts that are not represented by two or more active pA sites (>=2 pA sites with non-zero counts) from the analysis because there is no comparison to make in those  cases. However, if the count of a pA site is zero in the reference sample, it can cause errors of division by zero. A simple fix that is commonly used in bioinformatics is adding a small value e.g. 0.5 to all counts before running the test to avoid this error. 
  
 
-APAlog was developed at UCSF by Hossein Asgharian under supervision of Hani Goodarzi.
+__APAlog__ was developed at UCSF by Hossein Asgharian under supervision of Hani Goodarzi.  
 
-For questions and comments, email us at:
-hosseinali.asgharian@ucsf.edu
+For questions and comments, email us at:  
+hosseinali.asgharian@ucsf.edu  
 hani.goodarzi@ucsf.edu
