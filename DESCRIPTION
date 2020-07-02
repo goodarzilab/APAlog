@@ -23,5 +23,4 @@ Imports:
   data.table,
   nnet,
   plyr,
-  qvalue,
   utils

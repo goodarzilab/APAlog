@@ -1,7 +1,6 @@
-setwd("C:/Science/Projects/PolyA site selection/APAlog/data/")
 
-pA.toy2 <- read.table("./pAsite.toy2.txt", header = TRUE)
-pA_design <- read.table("./sgHNRNPC_sgCTRL_design.txt", header = TRUE)
+pA.toy2 <- read.table("C:/Science/Projects/PolyA site selection/APAlog/data/pAsite.toy2.txt", header = TRUE)
+pA_design <- read.table("C:/Science/Projects/PolyA site selection/APAlog/data/sgHNRNPC_sgCTRL_design.txt", header = TRUE)
 
 usethis::use_data(pA.toy2, pA_design, overwrite = TRUE)
 
