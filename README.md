@@ -18,10 +18,9 @@ To install __APAlog__ directly from GitHub, you need the *devtools* package. If 
 `install.packages("devtools")`
 	
 Then, load _devtools_, install and load __APAlog__ by
-	
-`library(devtools)`  
-`install_github("Goodarzilab/APAlog", dependencies = TRUE)`  
-`library(APAlog)`  
+	 
+`devtools::install_github("Goodarzilab/APAlog", dependencies = TRUE)`  
+`library(APAlog)` 
 
 ## Input data
 
