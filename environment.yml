@@ -1,0 +1,14 @@
+name: apalog_env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.8
+  - pip
+  - jupyterlab
+  - r-data.table
+  - r-IRkernel
+  - r-nnet
+  - r-plyr
+  - r-utils
