@@ -22,6 +22,14 @@ Then, load _devtools_, install and load __APAlog__ by
 `devtools::install_github("Goodarzilab/APAlog", dependencies = TRUE)`  
 `library(APAlog)` 
 
+You can also install APAlog inside a conda environment:
+
+```sh
+conda env create -f 'https://raw.githubusercontent.com/goodarzilab/APAlog/master/environment.yml'
+conda activate apalog_env
+R -e "BiocManager::install('APAlog/Ribolog', dependencies = FALSE)"
+```
+
 ## Input data
 
 The input to all three tests are two tables: a count table and a design table. Each row of the count table contains normalized RNA read counts pertaining to a poly A site of a transcript in one sample.  The design table describes each sample with covariates that can be used as predictors by __APAlog__. Predictors in the __APAlog__ model can be sample labels or one or more sample attributes (categorical or continuous variables) provided by the design matrix. 
