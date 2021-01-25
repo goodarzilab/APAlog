@@ -12,3 +12,4 @@ dependencies:
   - r-nnet
   - r-plyr
   - r-utils
+  - bioconductor-EnhancedVolcano
