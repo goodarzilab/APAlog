@@ -61,7 +61,11 @@ The aim of this test is to indentify genes or transcripts which show differentia
 Also specify the adjustment method for the correction of p-values.
 
 ```R
-fit.o_HNRNPC <- APAlog::pA_logit_dev(pA.toy2, pA.site ~ cell_line, pA_design, "sample",  adj_method = "fdr")
+fit.o_HNRNPC <- APAlog::pA_logit_dev(pA.toy2, 
+                                     pA.site ~ cell_line, 
+                                     pA_design, 
+                                     "sample",  
+                                     adj_method = "fdr")
 ```
 
 | transcript | p_devtest | fdr_p_devtest |
@@ -81,7 +85,9 @@ Check the `adj_p` function documentation for description of arguments and option
 
 This test compares all pairs of pA sites of a gene or transcripts and identifies those pairs whose usage ratios varies by the predictors in the model. Check the `pA_logit_pairwise` function documentation for description of arguments and options.
 
-`fit.p_HNRNPC <- APAlog::pA_logit_pairwise(pA.toy2, pA.site~cell_line, pA_design, "sample")`
+```R
+fit.p_HNRNPC <- APAlog::pA_logit_pairwise(pA.toy2, pA.site~cell_line, pA_design, "sample")
+```
 
 | transcript | ref_site | alt_site | b_intercept | p_intercept | b_cell_lineMDA_sgHNRNPC | p_cell_lineMDA_sgHNRNPC |
 |-|-|-|-|-|-|-|
@@ -102,7 +108,9 @@ This test compares all pairs of pA sites of a gene or transcripts and identifies
 
 Due to the mutual non-independence of p-values from testing pairs of poly A sites in transcripts with more than two sites, a major assumption of multiple testing correction procedures i.e. independence of all p-values is violated. Therefore, adjusting the p-value columns of fit.p_HNRNPC directly may be problematic. To circumvent this problem, we can merge fit.o_HNRNPC and fit.p_HNRNPC. There is only one deviance test per transcript, and the p-values from different transcripts are independent. Adjusted p-values from the deviance test can be used (with a cutoff) to determine which transcripts exhibit differential poly A site usage across the modeled conditions. For those transcripts which pass this threshold, one can select the most important shift(s) in poly A site usage based on the effect size ("b_", regression coefficient), significance (uncorrected "p_") or a combination of them from the output of the pairwise test.
 
-`fit.op_HNRNPC <- merge(fit.o_HNRNPC_fdr, fit.p_HNRNPC, by = "transcript")`
+```
+fit.op_HNRNPC <- merge(fit.o_HNRNPC_fdr, fit.p_HNRNPC, by = "transcript")
+```
 
 | transcript | p_devtest | fdr_p_devtest | ref_site | alt_site | b_intercept | p_intercept | b_cell_lineMDA_sgHNRNPC | p_cell_lineMDA_sgHNRNPC |
 |-|-|-|-|-|-|-|-|-|
@@ -137,7 +145,13 @@ Note: By deafult, the poly A site that comes first alphabetically is set as the 
 
 Also specify the adjustment method for the correction of p-values.
 
-`fit.m_HNRNPC_fdr <- APAlog::pA_multi_logit(pA.toy2, pA.site ~ cell_line, pA_design, "sample", adj_method = "fdr")`
+```R
+fit.m_HNRNPC_fdr <- APAlog::pA_multi_logit(pA.toy2, 
+                                           pA.site ~ cell_line, 
+                                           pA_design, 
+                                           "sample", 
+                                           adj_method = "fdr")
+```
 
 | transcript | ref_site | alt_site | b_intercept | b_cell_lineMDA_sgHNRNPC | p_intercept | p_cell_lineMDA_sgHNRNPC | fdr_p_intercept | fdr_p_cell_lineMDA_sgHNRNPC |
 |-|-|-|-|-|-|-|-|-|
