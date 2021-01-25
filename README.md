@@ -27,7 +27,7 @@ You can also install APAlog inside a conda environment:
 ```sh
 conda env create -f 'https://raw.githubusercontent.com/goodarzilab/APAlog/master/environment.yml'
 conda activate apalog_env
-R -e "BiocManager::install('APAlog/Ribolog', dependencies = FALSE)"
+R -e "BiocManager::install('goodarzilab/APAlog', dependencies = FALSE)"
 ```
 
 ## Input data
