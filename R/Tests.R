@@ -3,6 +3,7 @@
 #' @import data.table
 #' @import qvalue
 #' @import utils
+#' @import EnhancedVolcano
 
 
 
@@ -18,6 +19,9 @@
 #' @param sample_ID (optional) A key variable connecting the counts dataset (\code{data}) and the design matrix.
 #' @param long_output Logical variable describing output format. FALSE: Only regression coefficients and p-values are reported.
 #' TRUE: Standard error of regression coefficients, and z scores are also included in the output. Default: FALSE.
+#' @param adj_method P-value adjustment method.
+#' Options: "qvalue", "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none".
+#' "qvalue" calls the \emph{qvalue} package. Other methods are from base R.
 #' @details
 #' This function uses a multinomial logistic regression algorithm from the \emph{nnet} package. For each transcript, one poly A site (pA) is set as the
 #' canonical (reference) site and the usage of alternative pA(s) is compared to this reference pA. By default, the pA that comes first alphabetically
@@ -31,8 +35,8 @@
 #' fit1_pA <- pA_multi_logit(pA.toy2, pA.site ~ cell_line, pA_design, "sample")
 #' @export
 
-pA_multi_logit <- function(data, model, design = NULL, sample_ID = NULL, long_output = FALSE){
-  data <- remove_0_1_pA_transcripts(data)
+pA_multi_logit <- function(data, model, design = NULL, sample_ID = NULL, long_output = FALSE, adj_method){
+  data <- APAlog::remove_0_1_pA_transcripts(data)
   xd <- merge(data, design, by = sample_ID)
 
   fitx <- suppressWarnings(by(xd, xd$transcript, function(y) nnet::multinom(as.formula(Reduce(paste, deparse(model)), env = new.env()), data = y, weight = count)))
@@ -77,6 +81,10 @@ pA_multi_logit <- function(data, model, design = NULL, sample_ID = NULL, long_ou
     sfitx.com <- data.frame(cbind(transcript = sfitxb.df[,1], tr_site_pairs_df, sfitxb.df[,-1], sfitxse.df, sfitxz.df, sfitxp.df))
   }
 
+  if (adj_method != 'none') {
+    sfitx.com <- APAlog::adj_p(sfitx.com, pcols = c(6,7), adj_method = adj_method)
+  }
+
   return(sfitx.com)
 }
 
@@ -90,6 +98,7 @@ pA_multi_logit <- function(data, model, design = NULL, sample_ID = NULL, long_ou
 #' @return
 #' A dataframe containing log ratios (logistic regression coefficients), SE, z and p-values plus the names of
 #' ref and alt pA sites.
+#' @export
 
 pA_logit_1tr_pairs <- function(xdd, model){
   sites <- levels(droplevels(xdd[,strsplit(deparse(model), " ~ ")[[1]][1]]))
@@ -130,9 +139,9 @@ pA_logit_1tr_pairs <- function(xdd, model){
 #' @export
 
 pA_logit_pairwise <- function(data, model, design = NULL, sample_ID = NULL){
-  data <- remove_0_1_pA_transcripts(data)
+  data <- APAlog::remove_0_1_pA_transcripts(data)
   xd <- merge(data, design, by = sample_ID)
-  outxl <- suppressWarnings(by(xd, xd$transcript, function(y) pA_logit_1tr_pairs(y, model)))
+  outxl <- suppressWarnings(by(xd, xd$transcript, function(y) APAlog::pA_logit_1tr_pairs(y, model)))
   outx.df <- plyr::ldply(outxl, rbind, .id = "transcript")
   return(outx.df)
 }
@@ -174,6 +183,7 @@ adj_p <- function(x, pcols, adj_method){
 #' @description Calculate the p-value from a deviance test comparing a model to its corresponding null.
 #' @param x Output of a glm run
 #' @return P-value calculated from the chisq test of deviance between the model and its corresponding null.
+#' @export
 
 glm_deviance_test_p <- function(x){
   p <- pchisq((x$null.deviance - x$deviance), df = (x$df.null - x$df.residual), lower.tail = FALSE)
@@ -192,6 +202,9 @@ glm_deviance_test_p <- function(x){
 #' @param model Regression model describing the dependence of pA site usage on sample attribute(s).
 #' @param design (optional) Design matrix. A matrix describing sample attributes which can be used as predictors in the regression model.
 #' @param sample_ID (optional) A key variable connecting the counts dataset (\code{data}) and the design matrix.
+#' @param adj_method P-value adjustment method.
+#' Options: "qvalue", "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none".
+#' "qvalue" calls the \emph{qvalue} package. Other methods are from base R.
 #' @details
 #' A deviance test compares the likelihood of the fitted model with its corresponding null. In other words, it tests how much the prediction of response
 #' is improved by including the covariates, compared to a model with no covariates (the intercept only or null model). In the case of poly A site usage,
@@ -204,8 +217,8 @@ glm_deviance_test_p <- function(x){
 #' Deviance test p-values (one per transcript).
 #' @export
 
-pA_logit_dev <- function(data, model, design = NULL, sample_ID = NULL){
-  data <- remove_0_1_pA_transcripts(data)
+pA_logit_dev <- function(data, model, design = NULL, sample_ID = NULL, adj_method){
+  data <- APAlog::remove_0_1_pA_transcripts(data)
   xd <- merge(data, design, by = sample_ID)
 
   gfitx <- suppressWarnings(by(xd, xd$transcript, function(y) glm(as.formula(Reduce(paste, deparse(model)), env = new.env()), data = y, family = "binomial", weight = count)))
@@ -213,6 +226,11 @@ pA_logit_dev <- function(data, model, design = NULL, sample_ID = NULL){
   dtest_gfitx <- lapply(gfitx, function(x) glm_deviance_test_p(x))
   dtest_gfitx.df <- plyr::ldply(dtest_gfitx, rbind, .id = "transcript")
   names(dtest_gfitx.df)[2] <- "p_devtest"
+
+  if (adj_method != 'none'){
+    dtest_gfitx.df <- APAlog::adj_p(dtest_gfitx.df, pcols = 2, adj_method = adj_method)
+  }
+
   return(dtest_gfitx.df)
 }
 
@@ -230,6 +248,7 @@ pA_logit_dev <- function(data, model, design = NULL, sample_ID = NULL){
 #' with fewer than two active pA sites. This is essential to avoid errors when running the regression models.
 #' @return
 #' A subset of the input dataset where all transcripts are guaranteed to have two or more active pA sites.
+#' @export
 remove_0_1_pA_transcripts <- function(data){
   tt <- table(data$transcript, data$pA.site)
   ts <- rownames(tt[rowSums(tt>0) >= 2, , drop = FALSE])
@@ -237,4 +256,33 @@ remove_0_1_pA_transcripts <- function(data){
   rate <- 100 * (1 - (length(ts)/dim(tt)[1]))
   print(paste0(rate, "% of transcripts had <2 active pA sites and were removed"))
   return(x2)
+}
+
+
+#' @title volcano_plot
+#' @description Function to make the volcano plot from the p-values matrix
+#' @param fit Output dataframe of the pA_logit_dev or pA_multi_logit function
+#' @param x Name of the column in the dataframe that contains the log fold change
+#' @param y Name of the column in the dataframe that contains the corrected p-values
+#' @return A volcano plot visualisation
+#' @details A visualisation of the volcano plot resulting from the p-values and log fold change
+#' @examples
+#' vplot <- volcano_plot(fit1, x='logfdr', y='p_values')
+#' @export
+
+volcano_plot <- function(fit, x,
+xlab = "Ln fold change", y, ylab = "-Log10 FDR",
+title = "LMCN data, metastatic vs non-metastatic", titleLabSize = 12, border = "full",
+pCutoff = 0.001, FCcutoff = 1.5, xlim = c(-5, 5), ylim = c(0, 10)) {
+
+  if (! x %in% names(fit)){
+    stop(print(paste('The column', x, 'does not exist in the given dataframe.')))
+  }
+
+  if (! y %in% names(fit)){
+    stop(print(paste('The column', y, 'does not exist in the given dataframe.')))
+  }
+
+  return(EnhancedVolcano::EnhancedVolcano(fit, lab = rownames(fit),x=x, xlab=xlab, y=y, ylab=ylab, title=title,
+  titleLabSize=titleLabSize, border=border, pCutoff=pCutoff, FCcutoff=FCcutoff, xlim=xlim, ylim=ylim))
 }

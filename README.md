@@ -6,7 +6,7 @@
 Many trancripts in human and other organisms have multiple potential poly A sites. Using different poly A sites affects the composition of 3' UTR and the the regulatory elements it contains, and may impact important aspects of mRNA life cycle including stability and translation rate. The __APAlog__ package tests the significance of differential poly A site usage for each transcript across samples. The source of input data can be a 3' sequencing protocol e.g. Tag-Seq or QuantSeq, or regular RNA-seq reads mapped to annotated poly A sites. __APAlog__ offers three tests to evaluate the differential use of poly A sites of each transcript among samples:
 
 - Overall transcript-wise test
-- Multinomial test 
+- Multinomial test
 - Pairwise test
 
 The overall test evaluates the null hypothesis of no difference in poly A site usage of a transcript among samples. The multinomial test sets one of the poly A sites to canonical (reference) and compares the usage of all other poly A sites (one or more alternative sites) to this reference. The pairwise test compares the usage of all pairs of poly A sites of a transcript.  
@@ -14,13 +14,13 @@ The overall test evaluates the null hypothesis of no difference in poly A site u
 ## Installing APAlog
 
 To install __APAlog__ directly from GitHub, you need the *devtools* package. If not already installed on your system, run
-    
+
 `install.packages("devtools")`
-	
+
 Then, load _devtools_, install and load __APAlog__ by
-	 
+
 `devtools::install_github("Goodarzilab/APAlog", dependencies = TRUE)`  
-`library(APAlog)` 
+`library(APAlog)`
 
 You can also install APAlog inside a conda environment:
 
@@ -32,7 +32,7 @@ R -e "BiocManager::install('goodarzilab/APAlog', dependencies = FALSE)"
 
 ## Input data
 
-The input to all three tests are two tables: a count table and a design table. Each row of the count table contains normalized RNA read counts pertaining to a poly A site of a transcript in one sample.  The design table describes each sample with covariates that can be used as predictors by __APAlog__. Predictors in the __APAlog__ model can be sample labels or one or more sample attributes (categorical or continuous variables) provided by the design matrix. 
+The input to all three tests are two tables: a count table and a design table. Each row of the count table contains normalized RNA read counts pertaining to a poly A site of a transcript in one sample.  The design table describes each sample with covariates that can be used as predictors by __APAlog__. Predictors in the __APAlog__ model can be sample labels or one or more sample attributes (categorical or continuous variables) provided by the design matrix.
 
 Examples of a count table (only first six rows printed here):
 
@@ -53,27 +53,16 @@ This is a toy dataset with only eight transcripts and four samples (two cell lin
 | MDA_sgCTRL.r2 | MDA_sgCTRL | 2 |
 | MDA_sgHNRNPC.r1 | MDA_sgHNRNPC | 1 |
 | MDA_sgHNRNPC.r2 | MDA_sgHNRNPC | 2 |
-  
+
 ## Overall transcript-wise test
 
-The aim of this test is to indentify genes or transcripts which show differential poly A site selection among samples without specifying which pA sites are used more or less, or which covariates contribute to the difference. This is achieved through a deviance test which compares goodness-of-fit of the fitted model to the null model to answer the following question: Does the fitted model explain the data significantly better than the null model? (Null: equal usage of poly A sites across all samples.) Check the `pA_logit_dev` function documentation for description of arguments and options. 
+The aim of this test is to indentify genes or transcripts which show differential poly A site selection among samples without specifying which pA sites are used more or less, or which covariates contribute to the difference. This is achieved through a deviance test which compares goodness-of-fit of the fitted model to the null model to answer the following question: Does the fitted model explain the data significantly better than the null model? (Null: equal usage of poly A sites across all samples.) Check the `pA_logit_dev` function documentation for description of arguments and options.
 
-`fit.o_HNRNPC <- APAlog::pA_logit_dev(pA.toy2, pA.site ~ cell_line, pA_design, "sample")`
+Also specify the adjustment method for the correction of p-values.
 
-| transcript | p_devtest |
-|-|-|
-| Hs.29665.1 | 0.6936659 |
-| Hs.432760.1 | 0.0920899 |
-| Hs.465374.1 | 0.6802614 |
-| Hs.469154.1 | 0.5379891 |
-| Hs.515329.1 | 0.7983591 |
-| Hs.515688.1 | 0.7858670 |
-| Hs.523054.1 | 0.3581712 |
-| Hs.525527.1 | 0.0582738 |
-
-Correct the p-values for multiple testing:
-
-`fit.o_HNRNPC_fdr <- APAlog::adj_p(fit.o_HNRNPC, pcols = 2, adj_method = "fdr")`
+```R
+fit.o_HNRNPC <- APAlog::pA_logit_dev(pA.toy2, pA.site ~ cell_line, pA_design, "sample",  adj_method = "fdr")
+```
 
 | transcript | p_devtest | fdr_p_devtest |
 |-|-|-|
@@ -90,7 +79,7 @@ Check the `adj_p` function documentation for description of arguments and option
 
 ## Pairwise test
 
-This test compares all pairs of pA sites of a gene or transcripts and identifies those pairs whose usage ratios varies by the predictors in the model. Check the `pA_logit_pairwise` function documentation for description of arguments and options. 
+This test compares all pairs of pA sites of a gene or transcripts and identifies those pairs whose usage ratios varies by the predictors in the model. Check the `pA_logit_pairwise` function documentation for description of arguments and options.
 
 `fit.p_HNRNPC <- APAlog::pA_logit_pairwise(pA.toy2, pA.site~cell_line, pA_design, "sample")`
 
@@ -130,31 +119,25 @@ Due to the mutual non-independence of p-values from testing pairs of poly A site
 | Hs.515688.1 | 0.7858670 | 0.7983591 | site.01 | site.05 | -0.1915948 | 0.4830983 | -0.0999251 | 0.7858553 |
 | Hs.523054.1 | 0.3581712 | 0.7983591 | site.11 | site.17 | 1.0864190 | 0.0548246 | 1.0186876 | 0.3888369 |
 | Hs.525527.1 | 0.0582738 | 0.3683594 | site.09 | site.16 | 3.7438244 | 0.0000001 | -1.4088383 | 0.0830058 |
-  
+
+Use the volcano plot feature to visualise the log fold change against the p-values
+
+```R
+APAlog::volcano_plot(fit.op_HNRNPC,
+                     x='b_cell_lineMDA_sgHNRNPC',
+                     y='p_cell_lineMDA_sgHNRNPC',
+                     title='Volcano plot for the toy dataset')
+```
+
 ## Multinomial test
 
-This test is the preferred choice when one of the pA sites of each transcript e.g. the most proximal site is meant to serve as a baseline or default site vs. the alternative sites that may be activated under certain physiological conditions, as a result of 3' UTR mutations etc. Check the `pA_logit_dev` function documentation for description of arguments and options. 
+This test is the preferred choice when one of the pA sites of each transcript e.g. the most proximal site is meant to serve as a baseline or default site vs. the alternative sites that may be activated under certain physiological conditions, as a result of 3' UTR mutations etc. Check the `pA_logit_dev` function documentation for description of arguments and options.
 
-Note: By deafult, the poly A site that comes first alphabetically is set as the reference level. The user can employ a naming convention using prefixes to mark the reference poly A site for each transcript. 
+Note: By deafult, the poly A site that comes first alphabetically is set as the reference level. The user can employ a naming convention using prefixes to mark the reference poly A site for each transcript.
 
-`fit.m_HNRNPC <- APAlog::pA_multi_logit(pA.toy2, pA.site ~ cell_line, pA_design, "sample")`
+Also specify the adjustment method for the correction of p-values.
 
-| transcript | ref_site | alt_site | b_intercept | b_cell_lineMDA_sgHNRNPC | p_intercept | p_cell_lineMDA_sgHNRNPC |
-|-|-|-|-|-|-|-|
-| Hs.29665.1 | site.01 | site.04 | -0.9287923 | 0.2639347 | 0.0337059 | 0.6930761 |
-| Hs.432760.1 | site.01 | site.04 | 0.1163107 | 0.8196871 | 0.7253521 | 0.0961101 |
-| Hs.465374.1 | site.07 | site.14 | 1.9501247 | 0.0471591 | 0.0000384 | 0.9472635 |
-| Hs.465374.1 | site.07 | site.15 | 1.1084713 | -0.3686039 | 0.0301238 | 0.6425240 |
-| Hs.465374.1 | site.07 | site.16 | 2.1770842 | 0.5658090 | 0.0000032 | 0.4164527 |
-| Hs.469154.1 | site.38 | site.39 | 0.2783809 | -0.4496376 | 0.6023881 | 0.5393197 |
-| Hs.515329.1 | site.03 | site.05 | 2.6876015 | -0.1529092 | 0.0000000 | 0.7991348 |
-| Hs.515688.1 | site.01 | site.05 | -0.1915948 | -0.0999251 | 0.4830983 | 0.7858553 |
-| Hs.523054.1 | site.11 | site.17 | 1.0864160 | 1.0186867 | 0.0548251 | 0.3888367 |
-| Hs.525527.1 | site.09 | site.16 | 3.7438351 | -1.4088503 | 0.0000001 | 0.0830059 |
-
-Next, adjust the p values for multiple testing:
-
-`fit.m_HNRNPC_fdr <- APAlog::adj_p(fit.m_HNRNPC, pcols = c(6, 7), adj_method = "fdr")`
+`fit.m_HNRNPC_fdr <- APAlog::pA_multi_logit(pA.toy2, pA.site ~ cell_line, pA_design, "sample", adj_method = "fdr")`
 
 | transcript | ref_site | alt_site | b_intercept | b_cell_lineMDA_sgHNRNPC | p_intercept | p_cell_lineMDA_sgHNRNPC | fdr_p_intercept | fdr_p_cell_lineMDA_sgHNRNPC |
 |-|-|-|-|-|-|-|-|-|
@@ -169,6 +152,15 @@ Next, adjust the p values for multiple testing:
 | Hs.523054.1 | site.11 | site.17 | 1.0864160 | 1.0186867 | 0.0548251 | 0.3888367 | 0.0783216 | 0.8879276 |
 | Hs.525527.1 | site.09 | site.16 | 3.7438351 | -1.4088503 | 0.0000001 | 0.0830059 | 0.0000006 | 0.4805503 |
 
+Use the volcano plot feature to visualise the log fold change against the p-values
+
+```R
+APAlog::volcano_plot(fit.m_HNRNPC_fdr,
+                     x='b_cell_lineMDA_sgHNRNPC',
+                     y='fdr_p_cell_lineMDA_sgHNRNPC',
+                     title='Volcano plot for the toy dataset')
+```
+
 ## Output interpretation
 
 Regression coefficients (b's in the output column names) are equal to log of the alternative/reference poly A site (APA) ratio per covariate. Corresponding adjusted p-values mark the significance of differential poly A usage. For example, for transcript Hs.29665.1:
@@ -181,10 +173,10 @@ But this difference is not significant (FDR=0.89). Note that in the case of cate
 
 Note: The multinomial and pairwise tests use different fitting algorithms. That is why the log APA and p-values of similar comparisons in the two outputs are numerically very close but not identical.
 
-Note: Regression intercept in the __APAlog__ output represents the alternative/reference pA site ratio in the reference sample (the sample that has the reference values for all predictors), in this case MDA-sgCTRL. Note that such a sample may not actually exist in some datasets, for example in a multivariate dataset with several categorical predictors and partial factorial design, or a dataset containing continuous variables whose ranges exclude 0. Although the reference or baseline value for continuous covariates like age is automatically set at 0, real samples almost always have non-zero values. Therefore, whether or not the intercept term has a biological meaning depends on the dataset and  sample and variable types. 
+Note: Regression intercept in the __APAlog__ output represents the alternative/reference pA site ratio in the reference sample (the sample that has the reference values for all predictors), in this case MDA-sgCTRL. Note that such a sample may not actually exist in some datasets, for example in a multivariate dataset with several categorical predictors and partial factorial design, or a dataset containing continuous variables whose ranges exclude 0. Although the reference or baseline value for continuous covariates like age is automatically set at 0, real samples almost always have non-zero values. Therefore, whether or not the intercept term has a biological meaning depends on the dataset and  sample and variable types.
 
-Note: __APAlog__ automatically removes transcripts that are not represented by two or more active pA sites (>=2 pA sites with non-zero counts) from the analysis because there is no comparison to make in those  cases. However, if the count of a pA site is zero in the reference sample, it can cause errors of division by zero. A simple fix that is commonly used in bioinformatics is adding a small value e.g. 0.5 to all counts before running the test to avoid this error. 
- 
+Note: __APAlog__ automatically removes transcripts that are not represented by two or more active pA sites (>=2 pA sites with non-zero counts) from the analysis because there is no comparison to make in those  cases. However, if the count of a pA site is zero in the reference sample, it can cause errors of division by zero. A simple fix that is commonly used in bioinformatics is adding a small value e.g. 0.5 to all counts before running the test to avoid this error.
+
 
 __APAlog__ was developed at UCSF by Hossein Asgharian under supervision of Hani Goodarzi.  
 
