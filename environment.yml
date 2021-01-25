@@ -7,6 +7,7 @@ dependencies:
   - python=3.8
   - pip
   - jupyterlab
+  - r-BiocManager
   - r-data.table
   - r-IRkernel
   - r-nnet
