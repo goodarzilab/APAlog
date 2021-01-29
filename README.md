@@ -13,14 +13,13 @@ The overall test evaluates the null hypothesis of no difference in poly A site u
 
 ## Installing APAlog
 
-To install __APAlog__ directly from GitHub, you need the *devtools* package. If not already installed on your system, run
+To install __APAlog__ directly from GitHub, you need the *devtools* package. Then, load _devtools_, install and load __APAlog__ by
 
-`install.packages("devtools")`
-
-Then, load _devtools_, install and load __APAlog__ by
-
-`devtools::install_github("Goodarzilab/APAlog", dependencies = TRUE)`  
-`library(APAlog)`
+```R
+install.packages("devtools")
+devtools::install_github("Goodarzilab/APAlog", dependencies = TRUE)
+library(APAlog)
+```
 
 You can also install APAlog inside a conda environment:
 
@@ -61,9 +60,9 @@ The aim of this test is to indentify genes or transcripts which show differentia
 Also specify the adjustment method for the correction of p-values.
 
 ```R
-fit.o_HNRNPC <- APAlog::pA_logit_dev(pA.toy2, 
-                                     pA.site ~ cell_line, 
-                                     pA_design, 
+fit.o_HNRNPC <- APAlog::pA_logit_dev(pA.toy2,
+                                     pA.site ~ cell_line,
+                                     pA_design,
                                      "sample",  
                                      adj_method = "fdr")
 ```
@@ -137,6 +136,8 @@ APAlog::volcano_plot(fit.op_HNRNPC,
                      title='Volcano plot for the toy dataset')
 ```
 
+![volcano_1](./data/volcano_1.png)
+
 ## Multinomial test
 
 This test is the preferred choice when one of the pA sites of each transcript e.g. the most proximal site is meant to serve as a baseline or default site vs. the alternative sites that may be activated under certain physiological conditions, as a result of 3' UTR mutations etc. Check the `pA_logit_dev` function documentation for description of arguments and options.
@@ -146,10 +147,10 @@ Note: By deafult, the poly A site that comes first alphabetically is set as the 
 Also specify the adjustment method for the correction of p-values.
 
 ```R
-fit.m_HNRNPC_fdr <- APAlog::pA_multi_logit(pA.toy2, 
-                                           pA.site ~ cell_line, 
-                                           pA_design, 
-                                           "sample", 
+fit.m_HNRNPC_fdr <- APAlog::pA_multi_logit(pA.toy2,
+                                           pA.site ~ cell_line,
+                                           pA_design,
+                                           "sample",
                                            adj_method = "fdr")
 ```
 
@@ -174,6 +175,8 @@ APAlog::volcano_plot(fit.m_HNRNPC_fdr,
                      y='fdr_p_cell_lineMDA_sgHNRNPC',
                      title='Volcano plot for the toy dataset')
 ```
+
+![volcano_1](./data/volcano_2.png)
 
 ## Output interpretation
 
