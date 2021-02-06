@@ -133,7 +133,10 @@ Use the volcano plot feature to visualise the log fold change against the p-valu
 APAlog::volcano_plot(fit.op_HNRNPC,
                      x='b_cell_lineMDA_sgHNRNPC',
                      y='p_cell_lineMDA_sgHNRNPC',
-                     title='Volcano plot for the toy dataset')
+                     title='Volcano plot for the toy dataset',
+                     pCutoff = 0.05,
+                     FCcutoff = 1,
+                     ylim=c(0,2))
 ```
 
 ![volcano_1](./data/volcano_1.png)
@@ -173,7 +176,10 @@ Use the volcano plot feature to visualise the log fold change against the p-valu
 APAlog::volcano_plot(fit.m_HNRNPC_fdr,
                      x='b_cell_lineMDA_sgHNRNPC',
                      y='fdr_p_cell_lineMDA_sgHNRNPC',
-                     title='Volcano plot for the toy dataset')
+                     title='Volcano plot for the toy dataset',
+                     pCutoff = 0.05,
+                     FCcutoff = 1,
+                     ylim=c(0,2))
 ```
 
 ![volcano_1](./data/volcano_2.png)
