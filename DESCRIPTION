@@ -1,6 +1,6 @@
 Package: APAlog
 Title: Analysis of alternative poly A site usage
-Version: 0.0.0.9000
+Version: 0.99.0
 Authors@R:
     person(given = "Hossein",
            family = "Asgharian",
