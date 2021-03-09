@@ -2,11 +2,16 @@ Package: APAlog
 Title: Analysis of alternative poly A site usage
 Version: 0.99.0
 Authors@R:
-    person(given = "Hossein",
+    c(person(given = "Hossein",
            family = "Asgharian",
-           role = c("aut", "cre"),
-           email = "hosseinali.asgharian@ucsf.edu",
-           comment = c(ORCID = "https://orcid.org/0000-0001-7085-5045"))
+           role = c("aut"),
+           email = "hossein.asgharian@gmail.com",
+           comment = c(ORCID = "https://orcid.org/0000-0001-7085-5045")),
+    person(given = "Sohit",
+           family = "Miglani",
+           role = c("cre"),
+           email = "sohitmiglani@gmail.com",
+           comment = c(ORCID = "https://orcid.org/0000-0002-8075-320X")))
 Description: Many trancripts in human and other organisms have multiple potential poly A sites.
   Selection of different poly A sites affects the composition of 3' UTR and the the regulatory elements it contains,
   and may impact several aspects of mRNA life cycle e.g. stability and translation rate. The APAlog package tests
@@ -22,10 +27,26 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
 Depends:
-    R (>= 3.5.0)
+    R (>= 4.0)
 Imports:
-  data.table,
-  nnet,
-  plyr,
-  utils,
-  EnhancedVolcano
+    data.table,
+    nnet,
+    plyr,
+    utils,
+    EnhancedVolcano,
+    qvalue
+Suggests:
+    knitr
+biocViews:
+    BiomedicalInformatics,
+    DataImport,
+    Software,
+    ComparativeGenomics,
+    GeneExpression,
+    DifferentialExpression,
+    Genetics,
+    SystemsBiology,
+    Sequencing,
+    MultipleComparison
+VignetteBuilder:
+    knitr

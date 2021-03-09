@@ -1,0 +1,96 @@
+---
+title: "APAlog Tutorial"
+output: rmarkdown::html_vignette
+
+vignette: >
+  %\VignetteIndexEntry{APAlog Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# APAlog Tutorial
+
+```{r}
+library('APAlog')
+```
+
+### Load Counts Matrix and Design
+
+```{r}
+pA.toy2 <- APAlog::pA.toy2
+pA_design <- APAlog::pA_design
+```
+
+```{r}
+head(pA.toy2)
+```
+
+```{r}
+head(pA_design)
+```
+
+### Transcript-wise Testing
+
+```{r}
+fit.o_HNRNPC_fdr <- APAlog::pA_logit_dev(pA.toy2,
+                                         pA.site ~ cell_line,
+                                         pA_design,
+                                         "sample",  
+                                         adj_method = "fdr")
+```
+
+```{r}
+head(fit.o_HNRNPC_fdr)
+```
+
+### Pairwise Testing
+
+```{r}
+fit.p_HNRNPC <- APAlog::pA_logit_pairwise(pA.toy2, pA.site~cell_line, pA_design, "sample")
+```
+
+```{r}
+fit.op_HNRNPC <- merge(fit.o_HNRNPC_fdr, fit.p_HNRNPC, by = "transcript")
+```
+
+```{r}
+head(fit.op_HNRNPC)
+```
+
+- Volcano Plot for the corrected p-values against the log fold change
+
+```{r}
+APAlog::volcano_plot(fit.op_HNRNPC,
+                     x='b_cell_lineMDA_sgHNRNPC',
+                     y='p_cell_lineMDA_sgHNRNPC',
+                     title='Volcano plot for the toy dataset',
+                     pCutoff = 0.05,
+                     FCcutoff = 1,
+                     ylim=c(0,2))
+```
+
+### Multinomial Testing
+
+```{r}
+fit.m_HNRNPC_fdr <- pA_multi_logit(pA.toy2,
+                                   pA.site ~ cell_line,
+                                   pA_design,
+                                   "sample",
+                                   adj_method='fdr')
+```
+
+```{r}
+head(fit.m_HNRNPC_fdr)
+```
+
+- Volcano Plot for the corrected p-values against the log fold change
+
+```{r}
+APAlog::volcano_plot(fit.m_HNRNPC_fdr,
+                     x='b_cell_lineMDA_sgHNRNPC',
+                     y='p_cell_lineMDA_sgHNRNPC',
+                     title='Volcano plot for the toy dataset',
+                     pCutoff = 0.05,
+                     FCcutoff = 1,
+                     ylim=c(0,2))
+```

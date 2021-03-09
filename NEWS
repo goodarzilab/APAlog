@@ -1,0 +1,10 @@
+\name{NEWS}
+\title{News for Package \pkg{APAlog}}
+
+\section{Introducing the release of APAlog in March 2020}{
+\itemize{
+    \item Users can use APAlog to quantify alternative poly A site usage in their data.
+    \item Users must pre-process their data and quantify their counts of each poly A site.
+    \item APAlog uses a suite of tools powered by logistic regression to calculate important statistics and draw
+    visualizations for the user.
+}}

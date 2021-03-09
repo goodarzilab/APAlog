@@ -32,60 +32,58 @@
 #' Log ratios (multinomial logistic regression coefficients) and p-values describing the effect of predictor(s) specified in the model on the usage ratio of each alternative to reference pA site
 #' per trancript. If a long output is requested, SE and z scores are also reported.
 #' @examples
-#' fit1_pA <- pA_multi_logit(pA.toy2, pA.site ~ cell_line, pA_design, "sample")
+#' pA.toy2 <- APAlog::pA.toy2
+#' pA_design <- APAlog::pA_design
+#' fit1_pA <- pA_multi_logit(pA.toy2, pA.site ~ cell_line, pA_design, "sample", adj_method='fdr')
 #' @export
 
 pA_multi_logit <- function(data, model, design = NULL, sample_ID = NULL, long_output = FALSE, adj_method){
-  data <- APAlog::remove_0_1_pA_transcripts(data)
-  xd <- merge(data, design, by = sample_ID)
+    data <- remove_0_1_pA_transcripts(data)
+    xd <- merge(data, design, by = sample_ID)
+    fitx <- suppressWarnings(by(xd, xd$transcript, function(y) nnet::multinom(stats::as.formula(Reduce(paste, deparse(model)), env = new.env()), data = y, weight = count)))
+    sfitx <- lapply(fitx, function(x) summary(x))
 
-  fitx <- suppressWarnings(by(xd, xd$transcript, function(y) nnet::multinom(as.formula(Reduce(paste, deparse(model)), env = new.env()), data = y, weight = count)))
+    sfitxb <- lapply(sfitx, function(x) x$coefficients)
+    sfitxse <- lapply(sfitx, function(x) x$standard.errors)
+    sfitxz <- lapply(sfitx, function(x) x$coefficients / x$standard.errors)
+    sfitxp <- lapply(sfitxz, function(x) (1 - stats::pnorm(abs(x), 0, 1))*2)
 
-  sfitx <- lapply(fitx, function(x) summary(x))
+    sfitxb.df <- plyr::ldply(sfitxb, rbind, .id = "transcript")
+    names(sfitxb.df)[-1] <- paste0("b_", names(sfitxb.df)[-1])
+    names(sfitxb.df)[2] <- "b_intercept"
 
-  sfitxb <- lapply(sfitx, function(x) x$coefficients)
-  sfitxse <- lapply(sfitx, function(x) x$standard.errors)
-  sfitxz <- lapply(sfitx, function(x) x$coefficients / x$standard.errors)
-  sfitxp <- lapply(sfitxz, function(x) (1 - pnorm(abs(x), 0, 1))*2)
+    tr_sites_list <- by(data, data$transcript, function(x) levels(droplevels(x[,strsplit(deparse(model), " ~ ")[[1]][1]])))
+    levelpairs <- function(t){
+        ref_site <- t[1]
+        alt_sites <- t[-1]
+        pairs <- expand.grid(ref_site, alt_sites)
+        return(pairs)
+    }
+    tr_site_pairs_list <- lapply(tr_sites_list, levelpairs)
+    tr_site_pairs_df <- data.table::rbindlist(tr_site_pairs_list)
+    data.table::setnames(tr_site_pairs_df, c("ref_site", "alt_site"))
 
-  sfitxb.df <- plyr::ldply(sfitxb, rbind, .id = "transcript")
-  names(sfitxb.df)[-1] <- paste0("b_", names(sfitxb.df)[-1])
-  names(sfitxb.df)[2] <- "b_intercept"
+    sfitxse.df <- do.call(rbind.data.frame, sfitxse)
+    names(sfitxse.df) <- paste0("se_", names(sfitxse.df))
+    names(sfitxse.df)[1] <- "se_intercept"
 
-  tr_sites_list <- by(data, data$transcript, function(x) levels(droplevels(x[,strsplit(deparse(model), " ~ ")[[1]][1]])))
-  levelpairs <- function(t){
-    ref_site <- t[1]
-    alt_sites <- t[-1]
-    pairs <- expand.grid(ref_site, alt_sites)
-    return(pairs)
-  }
-  tr_site_pairs_list <- lapply(tr_sites_list, levelpairs)
-  tr_site_pairs_df <- data.table::rbindlist(tr_site_pairs_list)
-  names(tr_site_pairs_df) <- c("ref_site", "alt_site")
+    sfitxz.df <- do.call(rbind.data.frame, sfitxz)
+    names(sfitxz.df) <- paste0("z_", names(sfitxz.df))
+    names(sfitxz.df)[1] <- "z_intercept"
 
-  sfitxse.df <- do.call(rbind.data.frame, sfitxse)
-  names(sfitxse.df) <- paste0("se_", names(sfitxse.df))
-  names(sfitxse.df)[1] <- "se_intercept"
+    sfitxp.df <- do.call(rbind.data.frame, sfitxp)
+    names(sfitxp.df) <- paste0("p_", names(sfitxp.df))
+    names(sfitxp.df)[1] <- "p_intercept"
+    if (long_output == FALSE){
+        sfitx.com <- data.frame(cbind(transcript = sfitxb.df[,1], tr_site_pairs_df, sfitxb.df[,-1], sfitxp.df))
+    } else if (long_output == TRUE) {
+        sfitx.com <- data.frame(cbind(transcript = sfitxb.df[,1], tr_site_pairs_df, sfitxb.df[,-1], sfitxse.df, sfitxz.df, sfitxp.df))
+    }
 
-  sfitxz.df <- do.call(rbind.data.frame, sfitxz)
-  names(sfitxz.df) <- paste0("z_", names(sfitxz.df))
-  names(sfitxz.df)[1] <- "z_intercept"
-
-  sfitxp.df <- do.call(rbind.data.frame, sfitxp)
-  names(sfitxp.df) <- paste0("p_", names(sfitxp.df))
-  names(sfitxp.df)[1] <- "p_intercept"
-
-  if (long_output == FALSE){
-    sfitx.com <- data.frame(cbind(transcript = sfitxb.df[,1], tr_site_pairs_df, sfitxb.df[,-1], sfitxp.df))
-  } else if (long_output == TRUE) {
-    sfitx.com <- data.frame(cbind(transcript = sfitxb.df[,1], tr_site_pairs_df, sfitxb.df[,-1], sfitxse.df, sfitxz.df, sfitxp.df))
-  }
-
-  if (adj_method != 'none') {
-    sfitx.com <- APAlog::adj_p(sfitx.com, pcols = c(6,7), adj_method = adj_method)
-  }
-
-  return(sfitx.com)
+    if (adj_method != 'none') {
+        sfitx.com <- adj_p(sfitx.com, pcols = c(6,7), adj_method = adj_method)
+    }
+    return(sfitx.com)
 }
 
 
@@ -98,27 +96,28 @@ pA_multi_logit <- function(data, model, design = NULL, sample_ID = NULL, long_ou
 #' @return
 #' A dataframe containing log ratios (logistic regression coefficients), SE, z and p-values plus the names of
 #' ref and alt pA sites.
+#' @examples
+#' outxl <- APAlog::pA_logit_1tr_pairs(y, model))
 #' @export
 
 pA_logit_1tr_pairs <- function(xdd, model){
-  sites <- levels(droplevels(xdd[,strsplit(deparse(model), " ~ ")[[1]][1]]))
-  levelpairs <- utils::combn(sites, 2, simplify = FALSE)
-  xddp <- lapply(levelpairs, function(x) subset(xdd, xdd[,strsplit(deparse(model), " ~ ")[[1]][1]] %in% x))
-  xdd_test <- lapply(xddp, function(y) glm(as.formula(Reduce(paste, deparse(model)), env = new.env()), data = y, family = "binomial", weight = count))
-  sxdd_test <- lapply(xdd_test, function(x) summary(x)$coefficients[,c(1,4)])
-  sxdd_test_flat <- lapply(sxdd_test, function(x) c(t(x)))
-  sxdd_test_flat.df <- plyr::ldply(sxdd_test_flat, rbind)
-  d1.names <- c("b", "p")
-  d2.names <- rownames(sxdd_test[[1]])
-  d2.names[1] <- "intercept"
-  names(sxdd_test_flat.df) <- apply(expand.grid(d1.names, d2.names), 1, paste, collapse="_")
-  ref_site <- plyr::ldply(lapply(levelpairs, function(x) x[1]), rbind)
-  alt_site <- plyr::ldply(lapply(levelpairs, function(x) x[2]), rbind)
-  out.df <- data.frame(ref_site, alt_site, sxdd_test_flat.df)
-  names(out.df)[1:2] <- c("ref_site", "alt_site")
-  return(out.df)
+    sites <- levels(droplevels(xdd[,strsplit(deparse(model), " ~ ")[[1]][1]]))
+    levelpairs <- utils::combn(sites, 2, simplify = FALSE)
+    xddp <- lapply(levelpairs, function(x) subset(xdd, xdd[,strsplit(deparse(model), " ~ ")[[1]][1]] %in% x))
+    xdd_test <- lapply(xddp, function(y) stats::glm(stats::as.formula(Reduce(paste, deparse(model)), env = new.env()), data = y, family = "binomial", weight = count))
+    sxdd_test <- lapply(xdd_test, function(x) summary(x)$coefficients[,c(1,4)])
+    sxdd_test_flat <- lapply(sxdd_test, function(x) c(t(x)))
+    sxdd_test_flat.df <- plyr::ldply(sxdd_test_flat, rbind)
+    d1.names <- c("b", "p")
+    d2.names <- rownames(sxdd_test[[1]])
+    d2.names[1] <- "intercept"
+    names(sxdd_test_flat.df) <- apply(expand.grid(d1.names, d2.names), 1, paste, collapse="_")
+    ref_site <- plyr::ldply(lapply(levelpairs, function(x) x[1]), rbind)
+    alt_site <- plyr::ldply(lapply(levelpairs, function(x) x[2]), rbind)
+    out.df <- data.frame(ref_site, alt_site, sxdd_test_flat.df)
+    names(out.df)[seq_len(2)] <- c("ref_site", "alt_site")
+    return(out.df)
 }
-
 
 
 #' @title pA_logit_pairwise
@@ -135,15 +134,17 @@ pA_logit_1tr_pairs <- function(xdd, model){
 #' Log ratios (called "Estimate", logistic regression coefficients) and p-values describing the effect of predictor(s) specified in the model on the usage
 #' ratio of pairs of pA sites per trancript. Standard error and z score of estimates are also given.
 #' @examples
+#' pA.toy2 <- APAlog::pA.toy2
+#' pA_design <- APAlog::pA_design
 #' fit2_pA <- pA_logit_pairwise(pA.toy2, pA.site~cell_line, pA_design, "sample")
 #' @export
 
 pA_logit_pairwise <- function(data, model, design = NULL, sample_ID = NULL){
-  data <- APAlog::remove_0_1_pA_transcripts(data)
-  xd <- merge(data, design, by = sample_ID)
-  outxl <- suppressWarnings(by(xd, xd$transcript, function(y) APAlog::pA_logit_1tr_pairs(y, model)))
-  outx.df <- plyr::ldply(outxl, rbind, .id = "transcript")
-  return(outx.df)
+    data <- remove_0_1_pA_transcripts(data)
+    xd <- merge(data, design, by = sample_ID)
+    outxl <- suppressWarnings(by(xd, xd$transcript, function(y) pA_logit_1tr_pairs(y, model)))
+    outx.df <- plyr::ldply(outxl, rbind, .id = "transcript")
+    return(outx.df)
 }
 
 
@@ -164,17 +165,17 @@ pA_logit_pairwise <- function(data, model, design = NULL, sample_ID = NULL){
 #' @export
 
 adj_p <- function(x, pcols, adj_method){
-  y <- x[, pcols, drop = FALSE]
-  if (adj_method == "qvalue"){
-    y <- apply(y, 2, function(t) qvalue::qvalue(t)$qvalues)
-  } else {
-    y <- apply(y, 2, function(t) p.adjust(t, method = adj_method))
-  }
+    y <- x[, pcols, drop = FALSE]
+    if (adj_method == "qvalue"){
+        y <- apply(y, 2, function(t) qvalue::qvalue(t)$qvalues)
+    } else {
+        y <- apply(y, 2, function(t) stats::p.adjust(t, method = adj_method))
+    }
 
-  newnames <- paste0(adj_method, "_", colnames(y))
-  z <- data.frame(x,y)
-  colnames(z)[(NCOL(x)+1) : NCOL(z)] <- newnames
-  return(z)
+    newnames <- paste0(adj_method, "_", colnames(y))
+    z <- data.frame(x,y)
+    colnames(z)[(NCOL(x)+1) : NCOL(z)] <- newnames
+    return(z)
 }
 
 
@@ -183,11 +184,13 @@ adj_p <- function(x, pcols, adj_method){
 #' @description Calculate the p-value from a deviance test comparing a model to its corresponding null.
 #' @param x Output of a glm run
 #' @return P-value calculated from the chisq test of deviance between the model and its corresponding null.
+#' @examples
+#' dtest_gfitx <- glm_deviance_test_p(x)
 #' @export
 
 glm_deviance_test_p <- function(x){
-  p <- pchisq((x$null.deviance - x$deviance), df = (x$df.null - x$df.residual), lower.tail = FALSE)
-  return(p)
+    p <- stats::pchisq((x$null.deviance - x$deviance), df = (x$df.null - x$df.residual), lower.tail = FALSE)
+    return(p)
 }
 
 
@@ -212,26 +215,28 @@ glm_deviance_test_p <- function(x){
 #' on the ratio of specific pairs of pA sites, a deviance test reveals the overall
 #' relevance or informativeness of all the predictors in the model towards the pA site usage pattern for each transcript across samples.
 #' @examples
+#' pA.toy2 <- APAlog::pA.toy2
+#' pA_design <- APAlog::pA_design
 #' fit3_pA <- pA_logit_dev(pA.toy2, pA.site ~ cell_line, pA_design, "sample")
 #' @return
 #' Deviance test p-values (one per transcript).
 #' @export
 
 pA_logit_dev <- function(data, model, design = NULL, sample_ID = NULL, adj_method){
-  data <- APAlog::remove_0_1_pA_transcripts(data)
-  xd <- merge(data, design, by = sample_ID)
+    data <- remove_0_1_pA_transcripts(data)
+    xd <- merge(data, design, by = sample_ID)
 
-  gfitx <- suppressWarnings(by(xd, xd$transcript, function(y) glm(as.formula(Reduce(paste, deparse(model)), env = new.env()), data = y, family = "binomial", weight = count)))
+    gfitx <- suppressWarnings(by(xd, xd$transcript, function(y) stats::glm(stats::as.formula(Reduce(paste, deparse(model)), env = new.env()), data = y, family = "binomial", weight = count)))
 
-  dtest_gfitx <- lapply(gfitx, function(x) glm_deviance_test_p(x))
-  dtest_gfitx.df <- plyr::ldply(dtest_gfitx, rbind, .id = "transcript")
-  names(dtest_gfitx.df)[2] <- "p_devtest"
+    dtest_gfitx <- lapply(gfitx, function(x) glm_deviance_test_p(x))
+    dtest_gfitx.df <- plyr::ldply(dtest_gfitx, rbind, .id = "transcript")
+    names(dtest_gfitx.df)[2] <- "p_devtest"
 
-  if (adj_method != 'none'){
-    dtest_gfitx.df <- APAlog::adj_p(dtest_gfitx.df, pcols = 2, adj_method = adj_method)
-  }
+    if (adj_method != 'none'){
+        dtest_gfitx.df <- adj_p(dtest_gfitx.df, pcols = 2, adj_method = adj_method)
+    }
 
-  return(dtest_gfitx.df)
+    return(dtest_gfitx.df)
 }
 
 
@@ -249,13 +254,14 @@ pA_logit_dev <- function(data, model, design = NULL, sample_ID = NULL, adj_metho
 #' @return
 #' A subset of the input dataset where all transcripts are guaranteed to have two or more active pA sites.
 #' @export
+
 remove_0_1_pA_transcripts <- function(data){
-  tt <- table(data$transcript, data$pA.site)
-  ts <- rownames(tt[rowSums(tt>0) >= 2, , drop = FALSE])
-  x2 <- subset(data, transcript %in% ts)
-  rate <- 100 * (1 - (length(ts)/dim(tt)[1]))
-  print(paste0(rate, "% of transcripts had <2 active pA sites and were removed"))
-  return(x2)
+    tt <- table(data$transcript, data$pA.site)
+    ts <- rownames(tt[rowSums(tt>0) >= 2, , drop = FALSE])
+    x2 <- subset(data, transcript %in% ts)
+    rate <- 100 * (1 - (length(ts)/dim(tt)[1]))
+    print(paste0(rate, "% of transcripts had <2 active pA sites and were removed"))
+    return(x2)
 }
 
 
@@ -270,19 +276,42 @@ remove_0_1_pA_transcripts <- function(data){
 #' vplot <- volcano_plot(fit1, x='logfdr', y='p_values')
 #' @export
 
-volcano_plot <- function(fit, x,
-xlab = "Ln fold change", y, ylab = "-Log10 FDR",
-title = "LMCN data, metastatic vs non-metastatic", titleLabSize = 12, border = "full",
-pCutoff = 0.001, FCcutoff = 1.5, xlim = c(-5, 5), ylim = c(0, 10)) {
+volcano_plot <- function(fit, x, xlab = "Ln fold change", y, ylab = "-Log10 FDR",
+    title = "LMCN data, metastatic vs non-metastatic", titleLabSize = 12, border = "full",
+    pCutoff = 0.001, FCcutoff = 1.5, xlim = c(-5, 5), ylim = c(0, 10)) {
 
-  if (! x %in% names(fit)){
-    stop(print(paste('The column', x, 'does not exist in the given dataframe.')))
-  }
+    if (! x %in% names(fit)){
+        stop(print(paste('The column', x, 'does not exist in the given dataframe.')))
+    }
 
-  if (! y %in% names(fit)){
-    stop(print(paste('The column', y, 'does not exist in the given dataframe.')))
-  }
+    if (! y %in% names(fit)){
+        stop(print(paste('The column', y, 'does not exist in the given dataframe.')))
+    }
 
-  return(EnhancedVolcano::EnhancedVolcano(fit, lab = rownames(fit),x=x, xlab=xlab, y=y, ylab=ylab, title=title,
-  titleLabSize=titleLabSize, border=border, pCutoff=pCutoff, FCcutoff=FCcutoff, xlim=xlim, ylim=ylim))
+    return(EnhancedVolcano::EnhancedVolcano(fit, lab = rownames(fit),x=x, xlab=xlab, y=y, ylab=ylab, title=title,
+    titleLabSize=titleLabSize, border=border, pCutoff=pCutoff, FCcutoff=FCcutoff, xlim=xlim, ylim=ylim))
 }
+
+
+
+#' Toy transcript expression data
+#'
+#' Transcript expression data for testing the functions
+#'
+#' @name pA.toy2
+#' @format An object of class \code{data.frame}
+#' @examples
+#' data <- Apalog:pA.toy2
+"pA.toy2"
+
+
+
+#' Toy experimental design
+#'
+#' experimental design for testing the functions
+#'
+#' @name pA_design
+#' @format An object of class \code{data.frame}
+#' @examples
+#' data <- Apalog:pA_design
+"pA_design"
