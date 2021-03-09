@@ -16,8 +16,8 @@ The overall test evaluates the null hypothesis of no difference in poly A site u
 To install __APAlog__ directly from GitHub, you need the *devtools* package. Then, load _devtools_, install and load __APAlog__ by
 
 ```R
-install.packages("devtools")
-devtools::install_github("Goodarzilab/APAlog", dependencies = TRUE)
+install.packages("BiocManager")
+BiocManager::install("Goodarzilab/APAlog", dependencies = TRUE)
 library(APAlog)
 ```
 
