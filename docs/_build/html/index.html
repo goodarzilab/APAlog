@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
 
-    <title>Welcome to APAlog’s documentation! &#8212; APAlog 2022 documentation</title>
+    <title>Welcome to APAlog</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -32,17 +32,57 @@
           <div class="body" role="main">
             
   <section id="welcome-to-apalog-s-documentation">
-<h1>Welcome to APAlog’s documentation!<a class="headerlink" href="#welcome-to-apalog-s-documentation" title="Permalink to this headline">¶</a></h1>
+<h1><b>Welcome to APAlog</b><a class="headerlink" href="#welcome-to-apalog-s-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 </section>
 <section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<h3>Genome-wide statistical analysis of poly-A site switches<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h3><br>
+<img class="center" src="https://github.com/goodarzilab/APAlog/raw/master/data/APALog%20_logo3.png">
+
+Many trancripts in human and other organisms have multiple potential poly A sites. Using different poly A sites affects the composition of 3' UTR and the the regulatory elements it contains, and may impact important aspects of mRNA life cycle including stability and translation rate. The APAlog package tests the significance of differential poly A site usage for each transcript across samples.<br/><br/>
+
+<hr/>
+<h3> <b>Types of Datasets compatible with APAlog </b></h3><br/>
+
+The protocol affects the quality and accuracy of the model but APAlog is built to find the most robust estimates of the polyA site switches. 
 <ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+<li><b>RNA-sequencing Data</b></li>
+<ul class="simple">
+    <li> PolyA site switches from RNA-seq data are processed by characterizing ratios of each annotated polyA site count to the whole gene count, which are then modelled
+    against the treatment condition. </li>
+    <h4 style='text-align: center;'>ln(polyA_site/gene) ~ treatment</h4>
 </ul>
+<li><b>QuantSeq / TAG-Seq Data</b></li>
+<ul class="simple">
+    <li> PolyA site switches from Quantseq data are processed by directly counting the ends of each annotated polyA site which are then modelled
+    against the treatment condition. </li>
+    <h4 style='text-align: center;'>ln(alt_site/ref_site) ~ treatment</h4>
+</ul>
+</ul>
+<hr/>
+<h3> <b>Features of APAlog </b></h3><br/>
+
+<ul class="simple">
+<li> Pre-annotated references for quantification of polyA sites in Mouse and Human</li>
+<li> Code-Base for alignment, QC, Filtering and Normalization of PolyA site counts.</li>
+<li> Three different statistical tests to uncover genome-wide polyA site switch activity as well as specific intra-genomic switches.</li>
+</ul>
+
+The overall test evaluates the null hypothesis of no difference in poly A site usage of a transcript among samples. The multinomial test sets one of the poly A sites to canonical (reference) and compares the usage of all other poly A sites (one or more alternative sites) to this reference. The pairwise test compares the usage of all pairs of poly A sites of a transcript.
+
+<hr/>
+<h4> Contact Us: </h4><br/>
+<ul class="simple">
+<li> <b>Development Lead: </b>Sohit Miglani (sohitmiglani (at) gmail.com)</li>
+<li> <b>Project Lead: </b>Hosseinali Asgharian (hossein.asgharian (at) gmail.com)</li>
+<li> <b>Principal Investigator: </b>Hani Goodarzi (hani.goodarzi (at) ucsf.edu)</li>
+</ul>
+
+
+<p>-<a class="reference internal" href="rnaseq.html"><span class="std std-ref">Poly-A site switch analysis from short read RNA-seq data</span></a></p>
+<p>-<a class="reference internal" href="quantseq.html"><span class="std std-ref">Poly-A site switch analysis from Quantseq data</span></a></p>
+
 </section>
 
 
@@ -61,15 +101,9 @@
 
 
 
-<h3>Navigation</h3>
+<h3><a class="reference internal" href="rnaseq.html">RNA-seq data</a></h3>
+<h3><a class="reference internal" href="quantseq.html">Quantseq data</a></h3>
 
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="#">Documentation overview</a><ul>
-  </ul></li>
-</ul>
-</div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -93,7 +127,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2022, Sohit Miglani.
+      &copy;2022, Sohit Miglani, Hosseinali Asgharian, Hani Goodarzi
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.1</a>
